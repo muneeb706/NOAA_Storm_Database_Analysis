@@ -217,7 +217,7 @@ avg_economic_cost <- mean(net_dmg_expense_per_event_df$Economic_Cost)
 avg_economic_cost
 ```
 
-## Results
+### Results
 
 Finding most harmful events w.r.t economic consequences by extracting events from the dataframe having economic cost greater than average.
 
