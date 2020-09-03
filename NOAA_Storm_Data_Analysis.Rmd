@@ -1,0 +1,85 @@
+---
+title: "NOAA Storm Database Exploratory Analysis"
+author: "Muneeb Shahid"
+date: "9/2/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+## Loading the Storm Database
+
+Loading the Storm Data from compressed comma separated file compressed in bz2 format.
+
+```{r, echo=TRUE}
+storm_data <- read.csv("./repdata_data_StormData.csv.bz2", header=T, sep=",")
+head(storm_data)
+```
+
+## Finding Most Harmful Events with respect to Population Health
+
+Aggregating (sum) fatalities values w.r.t Event Type. 
+
+```{r, echo=TRUE}
+fatalities_per_event <- tapply(storm_data$FATALITIES, storm_data$EVTYPE, sum)
+```
+
+Aggregating (sum) injuries values w.r.t Event Type. 
+
+```{r, echo=TRUE}
+injuries_per_event <- tapply(storm_data$INJURIES, storm_data$EVTYPE, sum)
+```
+
+Taking sum of fatalities and injuries caused by each event. From now on this sum will be referred by health effects.
+
+```{r, echo=TRUE}
+health_effects_per_event <- fatalities_per_event + injuries_per_event
+```
+
+Excluding events with no health effects to find harmful events.
+
+```{r, echo=TRUE}
+health_effects_per_harmful_event <- health_effects_per_event[health_effects_per_event > 0]
+```
+
+Converting health effects per harmful event object to DataFrame type.
+
+```{r, echo=TRUE}
+health_effects_per_harmful_event_df <- data.frame(Event=names(health_effects_per_harmful_event), Health_Effects=health_effects_per_harmful_event,     row.names=NULL, stringsAsFactors=FALSE)
+
+head(health_effects_per_harmful_event_df)
+```
+
+Caclulating average number of health effects caused by harmful events.
+
+```{r, echo=TRUE}
+harmful_events_avg_effects <- mean(health_effects_per_harmful_event_df$Health_Effects)
+harmful_events_avg_effects
+```
+
+Finding most harmful events by extracting events from the dataframe having number of effects greater than average.
+
+```{r, echo=TRUE}
+hlth_efcts_per_most_hrmfl_event_df <- health_effects_per_harmful_event_df[health_effects_per_harmful_event_df$Health_Effects > harmful_events_avg_effects, ]
+hlth_efcts_per_most_hrmfl_event_df
+```
+
+### Results
+
+Plotting Health Effects against most harmful events.
+
+```{r, echo=TRUE}
+library(ggplot2)
+
+plot <-ggplot(data=hlth_efcts_per_most_hrmfl_event_df, aes(x=Event, y=Health_Effects)) +
+  geom_bar(stat="identity") + xlab("Events") + ylab("Health Effects") + coord_flip()
+
+plot
+
+```
+
+It looks like from above bar plot that Tornado is the most harmful event w.r.t population health.
+
+## Finding Events with greatest economic consequences
+
+### Results
