@@ -7,6 +7,10 @@ output:
   html_document: default
 ---
 
+## Synopsis
+This document contains exploratory data analysis of NOAA Storm Database.In this analysis I have tried to find most destructive events 
+in terms of population health and economic consequences. For population health effects I took number of fatalaties and injuries caused by each event in account. For economic consequences I took property damage and crop damage expenses into account.
+
 ## Loading the Storm Database
 
 Loading the Storm Data from compressed comma separated file compressed in bz2 format.
