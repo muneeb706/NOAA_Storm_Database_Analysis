@@ -82,4 +82,161 @@ It looks like from above bar plot that Tornado is the most harmful event w.r.t p
 
 ## Finding Events with greatest economic consequences
 
+Checking unique entries in property damage estimates exponents.
+
+```{r, echo=TRUE}
+unique(storm_data$PROPDMGEXP)
+```
+Translating exponents of property damage estimates into numbers.
+This translation is recorded in new attribute.
+
+Note: Numeric entries in exponents are translated into power of 10 and '-','+','?' values in exponents are ignored
+
+```{r, echo=TRUE}
+numeric_prop_dmg_exp <- (storm_data$PROPDMGEXP)
+
+numeric_prop_dmg_exp <- sub("K", 1000, numeric_prop_dmg_exp)
+numeric_prop_dmg_exp <- sub("h", 100, numeric_prop_dmg_exp)
+numeric_prop_dmg_exp <- sub("H", 100, numeric_prop_dmg_exp)
+numeric_prop_dmg_exp <- sub("B", 1000000000, numeric_prop_dmg_exp)
+numeric_prop_dmg_exp <- sub("b", 1000000000, numeric_prop_dmg_exp)
+numeric_prop_dmg_exp <- sub("M", 1000000, numeric_prop_dmg_exp)
+numeric_prop_dmg_exp <- sub("m", 1000000, numeric_prop_dmg_exp)
+numeric_prop_dmg_exp <- sub("0", 1, numeric_prop_dmg_exp)
+numeric_prop_dmg_exp <- sub("1", 10, numeric_prop_dmg_exp)
+numeric_prop_dmg_exp <- sub("2", 100, numeric_prop_dmg_exp)
+numeric_prop_dmg_exp <- sub("3", 1000, numeric_prop_dmg_exp)
+numeric_prop_dmg_exp <- sub("4", 10000, numeric_prop_dmg_exp)
+numeric_prop_dmg_exp <- sub("5", 100000, numeric_prop_dmg_exp)
+numeric_prop_dmg_exp <- sub("6", 1000000, numeric_prop_dmg_exp)
+numeric_prop_dmg_exp <- sub("7", 10000000, numeric_prop_dmg_exp)
+numeric_prop_dmg_exp <- sub("8", 100000000, numeric_prop_dmg_exp)
+# replacing empty values with 0
+numeric_prop_dmg_exp <- sub("", 0, numeric_prop_dmg_exp)
+```
+
+Checking unique entries in crop damage estimates exponents.
+
+```{r, echo=TRUE}
+unique(storm_data$CROPDMGEXP)
+```
+Translating exponents of crop damage estimates into numbers.
+This translation is recorded in new attribute.
+
+Note: Numeric entries in exponents are translated into power of 10 and '-','+','?' values in exponents are ignored
+
+```{r, echo=TRUE}
+numeric_crop_dmg_exp <- (storm_data$CROPDMGEXP)
+
+numeric_crop_dmg_exp <- sub("K", 1000, numeric_crop_dmg_exp)
+numeric_crop_dmg_exp <- sub("k", 1000, numeric_crop_dmg_exp)
+numeric_crop_dmg_exp <- sub("B", 1000000000, numeric_crop_dmg_exp)
+numeric_crop_dmg_exp <- sub("M", 1000000, numeric_crop_dmg_exp)
+numeric_crop_dmg_exp <- sub("m", 1000000, numeric_crop_dmg_exp)
+numeric_crop_dmg_exp <- sub("0", 1, numeric_crop_dmg_exp)
+numeric_crop_dmg_exp <- sub("2", 100, numeric_crop_dmg_exp)
+# replacing empty values with 0
+numeric_crop_dmg_exp <- sub("", 0, numeric_crop_dmg_exp)
+
+
+```
+
+Creating new dataframe from original data. 
+New dataframe will consist of subset of attributes from original data and newly created attributes in previous steps.
+
+```{r, echo=TRUE}
+strm_dta_fr_ecnmc_consqncs <- data.frame(storm_data$EVTYPE, storm_data$PROPDMG, storm_data$PROPDMGEXP, numeric_prop_dmg_exp, storm_data$CROPDMG, storm_data$CROPDMGEXP, numeric_crop_dmg_exp, stringsAsFactors = FALSE)
+
+names(strm_dta_fr_ecnmc_consqncs) <- c("Event", "Prop_Dmg", "Prop_Dmg_Exp", "Numeric_Prop_Dmg_Exp", "Crop_Dmg", "Crop_Dmg_Exp", "Numeric_Crop_Dmg_Exp")
+
+head(strm_dta_fr_ecnmc_consqncs)
+
+```
+
+Removing entries having '-','+','?' values in exponents.
+
+```{r, echo=TRUE}
+strm_dta_fr_ecnmc_consqncs <- strm_dta_fr_ecnmc_consqncs[strm_dta_fr_ecnmc_consqncs$Prop_Dmg_Exp != "-" | strm_dta_fr_ecnmc_consqncs$Prop_Dmg_Exp != "+" | strm_dta_fr_ecnmc_consqncs$Prop_Dmg_Exp != "?" | strm_dta_fr_ecnmc_consqncs$Crop_Dmg_Exp != "-" | strm_dta_fr_ecnmc_consqncs$Crop_Dmg_Exp != "+"| strm_dta_fr_ecnmc_consqncs$Prop_Dmg_Exp != "?",]
+
+```
+
+Performing Data Type conversion of attributes.
+
+```{r, echo=TRUE}
+strm_dta_fr_ecnmc_consqncs$Event <- as.character(strm_dta_fr_ecnmc_consqncs$Event)
+strm_dta_fr_ecnmc_consqncs$Numeric_Crop_Dmg_Exp <- as.numeric(strm_dta_fr_ecnmc_consqncs$Numeric_Crop_Dmg_Exp)
+strm_dta_fr_ecnmc_consqncs$Numeric_Prop_Dmg_Exp <- as.numeric(strm_dta_fr_ecnmc_consqncs$Numeric_Prop_Dmg_Exp)
+head(strm_dta_fr_ecnmc_consqncs)
+```
+
+Multiplying Damage values with corresponding numeric exponent values and storing the result in new attributes.
+
+```{r, echo=TRUE}
+prop_dmg_expense <- strm_dta_fr_ecnmc_consqncs$Prop_Dmg * strm_dta_fr_ecnmc_consqncs$Numeric_Prop_Dmg_Exp
+crop_dmg_expense <- strm_dta_fr_ecnmc_consqncs$Crop_Dmg * strm_dta_fr_ecnmc_consqncs$Numeric_Crop_Dmg_Exp
+
+strm_dta_fr_ecnmc_consqncs$prop_dmg_expense <- prop_dmg_expense
+strm_dta_fr_ecnmc_consqncs$crop_dmg_expense <- crop_dmg_expense
+
+head(strm_dta_fr_ecnmc_consqncs)
+```
+
+Adding property damage and cost damage expenses and storing result in new attribute.
+
+```{r, echo=TRUE}
+
+strm_dta_fr_ecnmc_consqncs$net_dmg_expense <- strm_dta_fr_ecnmc_consqncs$prop_dmg_expense + strm_dta_fr_ecnmc_consqncs$crop_dmg_expense
+
+head(strm_dta_fr_ecnmc_consqncs)
+```
+
+Aggregating (sum) net damage expenses w.r.t Event.
+
+```{r, echo=TRUE}
+net_dmg_expense_per_event <- tapply(strm_dta_fr_ecnmc_consqncs$net_dmg_expense, strm_dta_fr_ecnmc_consqncs$Event, sum)
+
+## removing NA values
+net_dmg_expense_per_event <- net_dmg_expense_per_event[!is.na(net_dmg_expense_per_event)]
+## converting to dataframe
+
+net_dmg_expense_per_event_df <- data.frame(Event=names(net_dmg_expense_per_event), Economic_Cost=net_dmg_expense_per_event, row.names=NULL, stringsAsFactors=FALSE)
+
+head(net_dmg_expense_per_event_df)
+```
+
+Caclulating average economic cost across all events.
+
+```{r, echo=TRUE}
+avg_economic_cost <- mean(net_dmg_expense_per_event_df$Economic_Cost)
+avg_economic_cost
+```
+
+Finding most harmful events w.r.t economoci consequences by extracting events from the dataframe having economic cost greater than average.
+
+```{r, echo=TRUE}
+ecnmc_cost_per_hrmfl_event_df <- net_dmg_expense_per_event_df[net_dmg_expense_per_event_df$Economic_Cost > avg_economic_cost, ]
+ecnmc_cost_per_hrmfl_event_df
+```
+
+Formatting Economic Cost in Billions
+
+```{r, echo=TRUE}
+ecnmc_cost_per_hrmfl_event_df$Economic_Cost_Billion <- round(ecnmc_cost_per_hrmfl_event_df$Economic_Cost, -3)/1000000000
+ecnmc_cost_per_hrmfl_event_df
+```
+
 ### Results
+
+Plotting Economic Consequences against most harmful events.
+
+```{r, echo=TRUE}
+library(ggplot2)
+
+ecnmc_cnsqnc_plot <-ggplot(data=ecnmc_cost_per_hrmfl_event_df, aes(x=Event, y=Economic_Cost_Billion)) +
+  geom_bar(stat="identity") + xlab("Event") + ylab("Economic Cost ($) in billions") + coord_flip()
+
+ecnmc_cnsqnc_plot
+
+```
+
+From above above bar plot we can deduce that HEAVY RAIN / SEVER WEATHER has greatest economic consequences.
