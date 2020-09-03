@@ -9,13 +9,14 @@ output:
 
 ## Synopsis
 This document contains exploratory data analysis of NOAA Storm Database.In this analysis I have tried to find most destructive events 
-in terms of population health and economic consequences. For population health effects I took number of fatalaties and injuries caused by each event in account. For economic consequences I took property damage and crop damage expenses into account.
+in terms of population health and economic consequences. For population health effects, I took number of fatalaties and injuries caused by each event into account. For economic consequences, I took property damage and crop damage expenses into account.To compare destruction caused by harmful events, 
+a bar plot was created for all of such events.
 
-## Loading the Storm Database
+## Data Processing
 
 Loading the Storm Data from compressed comma separated file compressed in bz2 format.
 
-```{r, echo=TRUE}
+```{r, echo=TRUE, cache=TRUE}
 storm_data <- read.csv("./repdata_data_StormData.csv.bz2", header=T, sep=",")
 head(storm_data)
 ```
@@ -61,6 +62,8 @@ harmful_events_avg_effects <- mean(health_effects_per_harmful_event_df$Health_Ef
 harmful_events_avg_effects
 ```
 
+### Results
+
 Finding most harmful events by extracting events from the dataframe having number of effects greater than average.
 
 ```{r, echo=TRUE}
@@ -68,15 +71,14 @@ hlth_efcts_per_most_hrmfl_event_df <- health_effects_per_harmful_event_df[health
 hlth_efcts_per_most_hrmfl_event_df
 ```
 
-### Results
 
 Plotting Health Effects against most harmful events.
 
 ```{r, echo=TRUE}
 library(ggplot2)
 
-plot <-ggplot(data=hlth_efcts_per_most_hrmfl_event_df, aes(x=Event, y=Health_Effects)) +
-  geom_bar(stat="identity") + xlab("Events") + ylab("Health Effects") + coord_flip()
+plot <-ggplot(data=hlth_efcts_per_most_hrmfl_event_df, aes(x=Event, y=Health_Effects), ) +
+  geom_bar(stat="identity") + labs(title = "Net Health Effects caused by Harmful Events") + xlab("Events") + ylab("Health Effects") + coord_flip()
 
 plot
 
@@ -215,7 +217,9 @@ avg_economic_cost <- mean(net_dmg_expense_per_event_df$Economic_Cost)
 avg_economic_cost
 ```
 
-Finding most harmful events w.r.t economoci consequences by extracting events from the dataframe having economic cost greater than average.
+## Results
+
+Finding most harmful events w.r.t economic consequences by extracting events from the dataframe having economic cost greater than average.
 
 ```{r, echo=TRUE}
 ecnmc_cost_per_hrmfl_event_df <- net_dmg_expense_per_event_df[net_dmg_expense_per_event_df$Economic_Cost > avg_economic_cost, ]
@@ -229,15 +233,13 @@ ecnmc_cost_per_hrmfl_event_df$Economic_Cost_Billion <- round(ecnmc_cost_per_hrmf
 ecnmc_cost_per_hrmfl_event_df
 ```
 
-### Results
-
 Plotting Economic Consequences against most harmful events.
 
 ```{r, echo=TRUE}
 library(ggplot2)
 
 ecnmc_cnsqnc_plot <-ggplot(data=ecnmc_cost_per_hrmfl_event_df, aes(x=Event, y=Economic_Cost_Billion)) +
-  geom_bar(stat="identity") + xlab("Event") + ylab("Economic Cost ($) in billions") + coord_flip()
+  geom_bar(stat="identity") + labs(title = "Net Economic Cost caused by Harmful Events") + xlab("Event") + ylab("Economic Cost ($) in billions") + coord_flip()
 
 ecnmc_cnsqnc_plot
 
